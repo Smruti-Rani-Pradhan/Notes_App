@@ -12,6 +12,7 @@ const noteSchema = new mongoose.Schema(
     content: {
       type: String,
       default: "",
+      trim: true,
       maxlength: 5000,
     },
 
@@ -26,8 +27,10 @@ const noteSchema = new mongoose.Schema(
   }
 );
 
+// Index for fast retrieval of a user's notes
 noteSchema.index({ owner: 1 });
 
+// Text search index with title given higher priority
 noteSchema.index(
   {
     title: "text",
