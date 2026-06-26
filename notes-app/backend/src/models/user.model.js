@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
   {
@@ -6,6 +9,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Name is required"],
       trim: true,
+      minlength: 2,
+      maxlength: 50,
     },
 
     email: {
@@ -14,24 +19,67 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
+      index: true,
+      validate: {
+        validator: validator.isEmail,
+        message: "Please provide a valid email address",
+      },
     },
 
     password: {
       type: String,
       required: [true, "Password is required"],
       minlength: 8,
+      select: false,
     },
 
     refreshToken: {
       type: String,
       default: null,
+      select: false,
     },
   },
   {
     timestamps: true,
   }
 );
-userSchema.index({ email: 1 });
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) {
+    return;
+  }
 
+  this.password = await bcrypt.hash(this.password, 10);
+});
+userSchema.methods.isPasswordCorrect = async function (password) {
+
+  return await bcrypt.compare(password, this.password);
+
+};
+userSchema.methods.generateAccessToken = function () {
+
+  return jwt.sign(
+    {
+      id: this._id,
+      email: this.email,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+
+};
+userSchema.methods.generateRefreshToken = function () {
+
+  return jwt.sign(
+    {
+      id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+  );
+
+};
 module.exports = mongoose.model("User", userSchema);
