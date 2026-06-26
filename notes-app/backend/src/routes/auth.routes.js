@@ -11,14 +11,17 @@ const {
 } = require("../controllers/auth.controller");
 
 const verifyJWT = require("../middleware/auth.middleware");
+const authLimiter = require("../middleware/rateLimiter");
 
-router.post("/register", registerUser);
+// Public Routes
+router.post("/register", authLimiter, registerUser);
 
-router.post("/login", loginUser);
+router.post("/login", authLimiter, loginUser);
 
+router.post("/refresh", authLimiter, refreshAccessToken);
+
+// Protected Routes
 router.post("/logout", verifyJWT, logoutUser);
-
-router.post("/refresh", refreshAccessToken);
 
 router.get("/me", verifyJWT, getCurrentUser);
 
