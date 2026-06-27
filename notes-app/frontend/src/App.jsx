@@ -1,7 +1,5 @@
-function App() {
-  return (
-    <h1>Notes App</h1>
-  );
-}
+import AppRouter from "./routes/AppRouter";
 
-export default App;
+export default function App() {
+  return <AppRouter />;
+}
