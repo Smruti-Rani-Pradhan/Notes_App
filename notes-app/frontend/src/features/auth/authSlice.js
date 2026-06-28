@@ -97,9 +97,16 @@ const authSlice = createSlice({
 
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.accessToken = action.payload.accessToken;
-        state.isAuthenticated = true;
+        // API returns wrapper { success, statusCode, message, data }
+        const payload = action.payload?.data || action.payload || {};
+        state.user = payload.user || null;
+        state.accessToken = payload.accessToken || null;
+        state.isAuthenticated = !!payload.accessToken;
+        try {
+          if (payload.accessToken) {
+            localStorage.setItem("accessToken", payload.accessToken);
+          }
+        } catch (e) {}
       })
 
       .addCase(login.rejected, (state, action) => {
@@ -138,6 +145,9 @@ const authSlice = createSlice({
         state.accessToken = null;
         state.isAuthenticated = false;
         state.error = null;
+        try {
+          localStorage.removeItem("accessToken");
+        } catch (e) {}
       })
 
       .addCase(logout.rejected, (state, action) => {

@@ -14,14 +14,14 @@ export const getNoteById = async (id) => {
   return response.data;
 };
 
-export const createNote = async (note) => {
-  const response = await api.post("/notes", note);
+export const createNote = async (noteData) => {
+  const response = await api.post("/notes", noteData);
 
   return response.data;
 };
 
-export const updateNote = async (id, note) => {
-  const response = await api.patch(`/notes/${id}`, note);
+export const updateNote = async (id, noteData) => {
+  const response = await api.patch(`/notes/${id}`, noteData);
 
   return response.data;
 };

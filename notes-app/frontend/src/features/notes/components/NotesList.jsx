@@ -1,43 +1,86 @@
-import NoteCard from "./NoteCard";
-import EmptyState from "./EmptyState";
+import { useMemo } from "react";
 
-const notes = [
-  {
-    id: 1,
-    title: "Shopping List",
-    content: "Milk, Eggs, Bread, Butter",
-    updatedAt: "2 min ago",
-  },
-  {
-    id: 2,
-    title: "Meeting Notes",
-    content: "Complete frontend authentication.",
-    updatedAt: "1 hour ago",
-  },
-  {
-    id: 3,
-    title: "Project Ideas",
-    content: "Realtime collaboration using Socket.io",
-    updatedAt: "Yesterday",
-  },
-];
+import useNotes from "../hooks/useNotes";
+
+import EmptyState from "./EmptyState";
+import NoteCard from "./NoteCard";
+import NotesSkeleton from "./NotesSkeleton";
 
 export default function NotesList() {
-  if (!notes.length) {
+  const {
+    notes,
+    loading,
+    filters,
+  } = useNotes();
+
+  const filteredNotes = useMemo(() => {
+    const keyword = filters.search
+      .trim()
+      .toLowerCase();
+
+    let result = [...notes];
+
+    if (keyword) {
+      result = result.filter((note) => {
+        const title = note.title?.toLowerCase() || "";
+        const content = note.content?.toLowerCase() || "";
+
+        return (
+          title.includes(keyword) ||
+          content.includes(keyword)
+        );
+      });
+    }
+
+    switch (filters.sort) {
+      case "createdAt":
+        result.sort(
+          (a, b) =>
+            new Date(a.createdAt) -
+            new Date(b.createdAt)
+        );
+        break;
+
+      case "title":
+        result.sort((a, b) =>
+          a.title.localeCompare(b.title)
+        );
+        break;
+
+      case "-title":
+        result.sort((a, b) =>
+          b.title.localeCompare(a.title)
+        );
+        break;
+
+      case "-createdAt":
+      default:
+        result.sort(
+          (a, b) =>
+            new Date(b.createdAt) -
+            new Date(a.createdAt)
+        );
+    }
+
+    return result;
+  }, [notes, filters]);
+
+  if (loading) {
+    return <NotesSkeleton />;
+  }
+
+  if (!filteredNotes.length) {
     return <EmptyState />;
   }
 
   return (
-    <div className="space-y-4 overflow-y-auto">
-
-      {notes.map((note, index) => (
+    <div className="h-full space-y-3 overflow-y-auto pr-1">
+      {filteredNotes.map((note) => (
         <NoteCard
-          key={note.id}
+          key={note._id}
           note={note}
-          active={index === 0}
         />
       ))}
-
     </div>
   );
 }

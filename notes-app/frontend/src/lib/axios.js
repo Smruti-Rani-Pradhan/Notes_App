@@ -8,4 +8,19 @@ const api = axios.create({
   },
 });
 
+// Attach Authorization header from stored access token
+api.interceptors.request.use((config) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  return config;
+});
+
 export default api;

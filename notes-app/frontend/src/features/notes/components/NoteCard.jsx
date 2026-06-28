@@ -1,27 +1,47 @@
 import { Card } from "@/components/ui/card";
 
-export default function NoteCard({ note, active = false }) {
-  return (
-    <Card
-      className={`cursor-pointer rounded-xl border p-4 transition-all duration-200 hover:shadow-md ${
-        active
-          ? "border-blue-500 bg-blue-50"
-          : "border-slate-200 bg-white"
-      }`}
-    >
-      <h3 className="truncate text-lg font-semibold text-slate-800">
-        {note.title}
-      </h3>
+import useNotes from "../hooks/useNotes";
 
-      <p className="mt-2 line-clamp-2 text-sm text-slate-500">
-        {note.content}
-      </p>
+export default function NoteCard({
+    note,
+}) {
 
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-xs text-slate-400">
-          {note.updatedAt}
-        </span>
-      </div>
-    </Card>
-  );
+    const {
+        selectedNote,
+        selectNote,
+    } = useNotes();
+
+    const active =
+        selectedNote?._id === note._id;
+
+    return (
+        <Card
+            onClick={() => selectNote(note)}
+            className={`cursor-pointer rounded-xl border p-4 transition hover:shadow-md ${active
+                    ? "border-blue-500 bg-blue-50"
+                    : ""
+                }`}
+        >
+
+            <h3 className="truncate text-lg font-semibold">
+
+                {note.title}
+
+            </h3>
+
+            <p className="mt-2 line-clamp-2 text-sm text-slate-500">
+
+                {note.content}
+
+            </p>
+
+            <p className="mt-4 text-xs text-slate-400">
+
+                Updated{" "}
+                {new Date(note.updatedAt).toLocaleString()}
+
+            </p>
+
+        </Card>
+    );
 }

@@ -1,36 +1,47 @@
+import { useEffect } from "react";
+
 import MainLayout from "@/components/layout/MainLayout";
 
+import NotesToolbar from "../components/NotesToolbar";
 import NotesList from "../components/NotesList";
 import NoteEditor from "../components/NoteEditor";
 
+import useNotes from "../hooks/useNotes";
+
 export default function Dashboard() {
+  const { loadNotes } = useNotes();
+
+  useEffect(() => {
+    loadNotes();
+  }, [loadNotes]);
+
   return (
     <MainLayout>
-      <section className="h-[calc(100vh-7rem)]">
-        <div className="grid h-full grid-cols-12 gap-6">
+      <div className="grid h-full grid-cols-12 gap-6">
 
-          {/* Left Panel - Notes List */}
-          <aside className="col-span-4 rounded-2xl border bg-white p-5 shadow-sm">
-            <div className="mb-5">
-              <h2 className="text-2xl font-bold text-slate-800">
-                My Notes
-              </h2>
+        {/* Left Panel */}
 
-              <p className="mt-1 text-sm text-slate-500">
-                All your notes in one place.
-              </p>
-            </div>
+        <aside className="col-span-4 flex h-full flex-col rounded-2xl border bg-white shadow-sm">
 
+          <div className="border-b p-5">
+            <NotesToolbar />
+          </div>
+
+          <div className="flex-1 overflow-hidden p-5">
             <NotesList />
-          </aside>
+          </div>
 
-          {/* Right Panel - Editor */}
-          <section className="col-span-8 rounded-2xl border bg-white shadow-sm">
-            <NoteEditor />
-          </section>
+        </aside>
 
-        </div>
-      </section>
+        {/* Right Panel */}
+
+        <section className="col-span-8 h-full overflow-hidden rounded-2xl border bg-white shadow-sm">
+
+          <NoteEditor />
+
+        </section>
+
+      </div>
     </MainLayout>
   );
 }
