@@ -7,7 +7,10 @@ import {
   getNotes,
   createNote,
   updateNote,
+  updateFavorite,
   deleteNote,
+  restoreNote,
+  permanentlyDeleteNote,
 } from "./api/notesApi";
 
 const initialState = {
@@ -26,6 +29,7 @@ const initialState = {
   filters: {
     search: "",
     sort: "-createdAt",
+    view: "notes",
   },
 
   loading: false,
@@ -41,9 +45,17 @@ export const fetchNotes = createAsyncThunk(
 
   async (_, thunkAPI) => {
     try {
-      const response = await getNotes();
+      const { filters, pagination } = thunkAPI.getState().notes;
 
-      return response.data;
+      const response = await getNotes({
+        search: filters.search || undefined,
+        sort: filters.sort,
+        view: filters.view,
+        page: pagination.currentPage,
+        limit: pagination.limit,
+      });
+
+      return response.data || response;
 
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -65,7 +77,7 @@ export const addNote = createAsyncThunk(
     try {
       const response = await createNote(noteData);
 
-      return response.data;
+      return response.data || response;
 
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -87,12 +99,34 @@ export const editNote = createAsyncThunk(
     try {
       const response = await updateNote(id, noteData);
 
-      return response.data;
+      return response.data || response;
 
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message ||
         "Unable to update note."
+      );
+    }
+  }
+);
+
+// ===============================
+// Favorite Note
+// ===============================
+
+export const favoriteNote = createAsyncThunk(
+  "notes/favoriteNote",
+
+  async ({ id, isFavorite }, thunkAPI) => {
+    try {
+      const response = await updateFavorite(id, isFavorite);
+
+      return response.data || response;
+
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        "Unable to update favorite."
       );
     }
   }
@@ -107,14 +141,58 @@ export const removeNote = createAsyncThunk(
 
   async (id, thunkAPI) => {
     try {
-      await deleteNote(id);
+      const response = await deleteNote(id);
+
+      return response.data || { _id: id };
+
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        "Unable to delete note."
+      );
+    }
+  }
+);
+
+// ===============================
+// Restore Note
+// ===============================
+
+export const restoreRemovedNote = createAsyncThunk(
+  "notes/restoreRemovedNote",
+
+  async (id, thunkAPI) => {
+    try {
+      const response = await restoreNote(id);
+
+      return response.data || response;
+
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        "Unable to restore note."
+      );
+    }
+  }
+);
+
+// ===============================
+// Permanently Delete Note
+// ===============================
+
+export const destroyNote = createAsyncThunk(
+  "notes/destroyNote",
+
+  async (id, thunkAPI) => {
+    try {
+      await permanentlyDeleteNote(id);
 
       return id;
 
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message ||
-        "Unable to delete note."
+        "Unable to permanently delete note."
       );
     }
   }
@@ -144,10 +222,18 @@ const notesSlice = createSlice({
 
     setSearch(state, action) {
       state.filters.search = action.payload;
+      state.pagination.currentPage = 1;
     },
 
     setSort(state, action) {
       state.filters.sort = action.payload;
+      state.pagination.currentPage = 1;
+    },
+
+    setView(state, action) {
+      state.filters.view = action.payload;
+      state.pagination.currentPage = 1;
+      state.selectedNote = null;
     },
 
     clearError(state) {
@@ -233,6 +319,43 @@ const notesSlice = createSlice({
       })
 
       // ===============================
+      // Favorite Note
+      // ===============================
+
+      .addCase(favoriteNote.pending, (state) => {
+        state.error = null;
+      })
+
+      .addCase(favoriteNote.fulfilled, (state, action) => {
+        state.notes = state.notes
+          .map((note) =>
+            note._id === action.payload._id
+              ? action.payload
+              : note
+          )
+          .filter((note) =>
+            state.filters.view === "favorites"
+              ? note.isFavorite
+              : true
+          );
+
+        if (
+          state.selectedNote &&
+          state.selectedNote._id === action.payload._id
+        ) {
+          state.selectedNote =
+            state.filters.view === "favorites" &&
+            !action.payload.isFavorite
+              ? null
+              : action.payload;
+        }
+      })
+
+      .addCase(favoriteNote.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // ===============================
       // Delete Note
       // ===============================
 
@@ -245,12 +368,12 @@ const notesSlice = createSlice({
         state.loading = false;
 
         state.notes = state.notes.filter(
-          (note) => note._id !== action.payload
+          (note) => note._id !== action.payload._id
         );
 
         if (
           state.selectedNote &&
-          state.selectedNote._id === action.payload
+          state.selectedNote._id === action.payload._id
         ) {
           state.selectedNote = null;
         }
@@ -264,6 +387,64 @@ const notesSlice = createSlice({
       .addCase(removeNote.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // ===============================
+      // Restore Note
+      // ===============================
+
+      .addCase(restoreRemovedNote.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(restoreRemovedNote.fulfilled, (state, action) => {
+        state.loading = false;
+
+        state.notes = state.notes.filter(
+          (note) => note._id !== action.payload._id
+        );
+
+        if (
+          state.selectedNote &&
+          state.selectedNote._id === action.payload._id
+        ) {
+          state.selectedNote = null;
+        }
+      })
+
+      .addCase(restoreRemovedNote.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ===============================
+      // Permanently Delete Note
+      // ===============================
+
+      .addCase(destroyNote.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(destroyNote.fulfilled, (state, action) => {
+        state.loading = false;
+
+        state.notes = state.notes.filter(
+          (note) => note._id !== action.payload
+        );
+
+        if (
+          state.selectedNote &&
+          state.selectedNote._id === action.payload
+        ) {
+          state.selectedNote = null;
+        }
+      })
+
+      .addCase(destroyNote.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
@@ -274,6 +455,7 @@ export const {
   clearSelectedNote,
   setSearch,
   setSort,
+  setView,
   clearError,
 } = notesSlice.actions;
 

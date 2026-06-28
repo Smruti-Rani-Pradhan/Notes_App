@@ -1,4 +1,4 @@
-import { Save, Trash2, Clock } from "lucide-react";
+import { Save, Trash2, Clock, Star, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,12 @@ export default function NoteEditorForm({
   loading,
   onSave,
   onDelete,
+  onFavorite,
+  onRestore,
+  onPermanentDelete,
   isExisting,
+  isFavorite,
+  isTrash,
   updatedAt,
 }) {
   return (
@@ -20,19 +25,19 @@ export default function NoteEditorForm({
 
       {/* Header */}
 
-      <div className="flex items-center justify-between border-b px-8 py-5">
+      <div className="flex flex-col gap-4 border-b px-5 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-8">
 
         <div>
 
-          <h2 className="text-xl font-semibold text-slate-800">
-            {isExisting ? "Edit Note" : "New Note"}
+          <h2 className="text-xl font-semibold text-foreground">
+            {isTrash ? "Deleted Note" : isExisting ? "Edit Note" : "New Note"}
           </h2>
 
           {updatedAt && (
-            <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+            <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
               <Clock size={14} />
               <span>
-                Updated{" "}
+                {isTrash ? "Deleted" : "Updated"}{" "}
                 {new Date(updatedAt).toLocaleString()}
               </span>
             </div>
@@ -42,24 +47,64 @@ export default function NoteEditorForm({
 
         <div className="flex items-center gap-3">
 
-          {isExisting && (
+          {isTrash ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={onRestore}
+                disabled={loading}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Restore
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={onPermanentDelete}
+                disabled={loading}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Forever
+              </Button>
+            </>
+          ) : (
+            <>
+              {isExisting && (
+                <Button
+                  variant="outline"
+                  onClick={onFavorite}
+                  disabled={loading}
+                >
+                  <Star
+                    className={`mr-2 h-4 w-4 ${
+                      isFavorite ? "fill-amber-400 text-amber-500" : ""
+                    }`}
+                  />
+                  {isFavorite ? "Favorited" : "Favorite"}
+                </Button>
+              )}
+
+              {isExisting && (
+                <Button
+                  variant="destructive"
+                  onClick={onDelete}
+                  disabled={loading}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Move to Trash
+                </Button>
+              )}
+
             <Button
-              variant="destructive"
-              onClick={onDelete}
+              onClick={onSave}
+              disabled={loading}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+              <Save className="mr-2 h-4 w-4" />
+
+              {loading ? "Saving..." : "Save"}
             </Button>
+            </>
           )}
-
-          <Button
-            onClick={onSave}
-            disabled={loading}
-          >
-            <Save className="mr-2 h-4 w-4" />
-
-            {loading ? "Saving..." : "Save"}
-          </Button>
 
         </div>
 
@@ -67,19 +112,21 @@ export default function NoteEditorForm({
 
       {/* Editor */}
 
-      <div className="flex flex-1 flex-col p-8">
+      <div className="flex flex-1 flex-col p-5 lg:p-8">
 
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled Note"
-          className="border-none px-0 text-3xl font-bold shadow-none focus-visible:ring-0"
+          disabled={isTrash}
+          className="h-auto border-none px-0 text-3xl font-bold shadow-none focus-visible:ring-0"
         />
 
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Start writing..."
+          disabled={isTrash}
           className="mt-6 flex-1 resize-none border-none px-0 text-base leading-7 shadow-none focus-visible:ring-0"
         />
 
@@ -87,14 +134,14 @@ export default function NoteEditorForm({
 
       {/* Footer */}
 
-      <div className="flex items-center justify-between border-t px-8 py-4 text-sm text-slate-500">
+      <div className="flex items-center justify-between border-t px-5 py-4 text-sm text-muted-foreground lg:px-8">
 
         <span>
-          Ctrl + S to save
+          {isTrash ? "Restore to edit again" : "Ctrl + S to save"}
         </span>
 
         <span>
-          {title.length} characters
+          {content.length} characters
         </span>
 
       </div>

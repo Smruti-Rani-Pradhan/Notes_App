@@ -26,8 +26,28 @@ export const updateNote = async (id, noteData) => {
   return response.data;
 };
 
+export const updateFavorite = async (id, isFavorite) => {
+  const response = await api.patch(`/notes/${id}/favorite`, {
+    isFavorite,
+  });
+
+  return response.data;
+};
+
 export const deleteNote = async (id) => {
   const response = await api.delete(`/notes/${id}`);
+
+  return response.data;
+};
+
+export const restoreNote = async (id) => {
+  const response = await api.patch(`/notes/${id}/restore`);
+
+  return response.data;
+};
+
+export const permanentlyDeleteNote = async (id) => {
+  const response = await api.delete(`/notes/${id}/permanent`);
 
   return response.data;
 };

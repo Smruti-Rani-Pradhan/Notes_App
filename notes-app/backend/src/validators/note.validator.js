@@ -32,7 +32,16 @@ const validateNoteUpdate = ({ title, content }) => {
   return null;
 };
 
+const validateFavorite = ({ isFavorite }) => {
+  if (typeof isFavorite !== "boolean") {
+    return "Favorite status must be true or false.";
+  }
+
+  return null;
+};
+
 module.exports = {
   validateNote,
   validateNoteUpdate,
+  validateFavorite,
 };

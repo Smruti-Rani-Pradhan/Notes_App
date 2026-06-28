@@ -34,13 +34,13 @@ export default function DeleteDialog({
           </div>
 
           <AlertDialogTitle className="text-center text-2xl">
-            Delete Note?
+            Move Note to Trash?
           </AlertDialogTitle>
 
           <AlertDialogDescription className="text-center leading-6">
-            This action cannot be undone.
+            You can restore this note later from Trash.
             <br />
-            Your note will be permanently deleted.
+            It will no longer appear in your active notes.
           </AlertDialogDescription>
 
         </AlertDialogHeader>
@@ -57,8 +57,8 @@ export default function DeleteDialog({
             className="bg-red-600 hover:bg-red-700"
           >
             {loading
-              ? "Deleting..."
-              : "Delete"}
+              ? "Moving..."
+              : "Move to Trash"}
           </AlertDialogAction>
 
         </AlertDialogFooter>

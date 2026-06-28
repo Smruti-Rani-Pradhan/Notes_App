@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FileText } from "lucide-react";
+import { toast } from "sonner";
 
 import useNoteEditor from "../hooks/useNoteEditor";
 import useNotes from "../hooks/useNotes";
@@ -17,7 +19,13 @@ export default function NoteEditor() {
     selectedNote,
   } = useNoteEditor();
 
-  const { removeNote } = useNotes();
+  const {
+    removeNote,
+    toggleFavorite,
+    restoreNote,
+    permanentlyDeleteNote,
+    filters,
+  } = useNotes();
 
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -28,27 +36,78 @@ export default function NoteEditor() {
       await removeNote(selectedNote._id).unwrap();
 
       setDeleteOpen(false);
+      toast.success("Note moved to trash.");
     } catch (error) {
-      console.error(error);
+      toast.error(error || "Unable to delete note.");
     }
   };
 
+  const handleFavorite = async () => {
+    if (!selectedNote?._id) return;
+
+    try {
+      await toggleFavorite(
+        selectedNote._id,
+        !selectedNote.isFavorite
+      ).unwrap();
+    } catch (error) {
+      toast.error(error || "Unable to update favorite.");
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!selectedNote?._id) return;
+
+    try {
+      await restoreNote(selectedNote._id).unwrap();
+      toast.success("Note restored.");
+    } catch (error) {
+      toast.error(error || "Unable to restore note.");
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    if (!selectedNote?._id) return;
+
+    try {
+      await permanentlyDeleteNote(selectedNote._id).unwrap();
+      toast.success("Note permanently deleted.");
+    } catch (error) {
+      toast.error(error || "Unable to permanently delete note.");
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        saveNote();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [saveNote]);
+
   if (!selectedNote) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-center">
+      <div className="flex h-full flex-col items-center justify-center bg-muted/20 p-8 text-center">
 
-        <div className="mb-6 text-7xl">
-          📝
+        <div className="mb-6 flex size-20 items-center justify-center rounded-lg bg-background shadow-sm">
+          <FileText className="size-10 text-muted-foreground" />
         </div>
 
-        <h2 className="text-2xl font-semibold text-slate-700">
-          No Note Selected
+        <h2 className="text-2xl font-semibold text-foreground">
+          {filters.view === "trash"
+            ? "Select a Deleted Note"
+            : "No Note Selected"}
         </h2>
 
-        <p className="mt-3 max-w-md text-slate-500">
-          Select a note from the left panel or click
-          <span className="font-semibold"> New Note </span>
-          to start writing.
+        <p className="mt-3 max-w-md text-muted-foreground">
+          {filters.view === "trash"
+            ? "Choose a deleted note to restore it or remove it permanently."
+            : "Select a note from the list or create a new one to start writing."}
         </p>
 
       </div>
@@ -66,8 +125,13 @@ export default function NoteEditor() {
         loading={loading}
         onSave={saveNote}
         onDelete={() => setDeleteOpen(true)}
+        onFavorite={handleFavorite}
+        onRestore={handleRestore}
+        onPermanentDelete={handlePermanentDelete}
         isExisting={Boolean(selectedNote._id)}
-        updatedAt={selectedNote.updatedAt}
+        isFavorite={Boolean(selectedNote.isFavorite)}
+        isTrash={filters.view === "trash" || Boolean(selectedNote.deletedAt)}
+        updatedAt={selectedNote.deletedAt || selectedNote.updatedAt}
       />
 
       <DeleteDialog

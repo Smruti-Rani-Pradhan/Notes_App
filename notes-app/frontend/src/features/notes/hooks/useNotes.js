@@ -5,12 +5,16 @@ import {
   fetchNotes,
   addNote,
   editNote,
+  favoriteNote,
   removeNote,
+  restoreRemovedNote,
+  destroyNote,
   selectNote,
   createNewDraft,
   clearSelectedNote,
   setSearch,
   setSort,
+  setView,
 } from "../notesSlice";
 
 export default function useNotes() {
@@ -66,6 +70,27 @@ export default function useNotes() {
     [dispatch]
   );
 
+  const toggleFavorite = useCallback(
+    (id, isFavorite) =>
+      dispatch(
+        favoriteNote({
+          id,
+          isFavorite,
+        })
+      ),
+    [dispatch]
+  );
+
+  const restoreNote = useCallback(
+    (id) => dispatch(restoreRemovedNote(id)),
+    [dispatch]
+  );
+
+  const permanentlyDeleteNote = useCallback(
+    (id) => dispatch(destroyNote(id)),
+    [dispatch]
+  );
+
   // =============================
   // Selection
   // =============================
@@ -99,6 +124,11 @@ export default function useNotes() {
     [dispatch]
   );
 
+  const changeView = useCallback(
+    (value) => dispatch(setView(value)),
+    [dispatch]
+  );
+
   return {
     // State
     notes,
@@ -111,12 +141,20 @@ export default function useNotes() {
     // Actions
     loadNotes,
     createNote,
+    addNote: createNote,
     updateNote,
+    editNote: updateNote,
     deleteNote,
+    removeNote: deleteNote,
+    toggleFavorite,
+    restoreNote,
+    permanentlyDeleteNote,
     openNote,
+    selectNote: openNote,
     createDraft,
     clearSelection,
     searchNotes,
     sortNotes,
+    changeView,
   };
 }

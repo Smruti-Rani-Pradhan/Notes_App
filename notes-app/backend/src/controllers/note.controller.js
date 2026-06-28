@@ -9,6 +9,7 @@ const asyncHandler = require("../middleware/asyncHandler");
 const {
   validateNote,
   validateNoteUpdate,
+  validateFavorite,
 } = require("../validators/note.validator");
 
 // ===============================
@@ -55,7 +56,16 @@ const getNotes = asyncHandler(async (req, res) => {
 
   const filter = {
     owner: req.user._id,
+    deletedAt: null,
   };
+
+  if (req.query.view === "favorites") {
+    filter.isFavorite = true;
+  }
+
+  if (req.query.view === "trash") {
+    filter.deletedAt = { $ne: null };
+  }
 
   if (req.query.search) {
     filter.$text = {
@@ -152,6 +162,7 @@ const updateNote = asyncHandler(async (req, res) => {
   const note = await Note.findOne({
     _id: id,
     owner: req.user._id,
+    deletedAt: null,
   });
 
   if (!note) {
@@ -176,6 +187,54 @@ const updateNote = asyncHandler(async (req, res) => {
     )
   );
 });
+
+// ===============================
+// Toggle Favorite
+// ===============================
+
+const updateFavorite = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid note ID.");
+  }
+
+  const error = validateFavorite(req.body);
+
+  if (error) {
+    throw new ApiError(400, error);
+  }
+
+  const note = await Note.findOneAndUpdate(
+    {
+      _id: id,
+      owner: req.user._id,
+      deletedAt: null,
+    },
+    {
+      isFavorite: req.body.isFavorite,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!note) {
+    throw new ApiError(404, "Note not found.");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      note,
+      note.isFavorite
+        ? "Note added to favorites."
+        : "Note removed from favorites."
+    )
+  );
+});
+
 // ===============================
 // Delete Note
 // ===============================
@@ -187,9 +246,87 @@ const deleteNote = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid note ID.");
   }
 
+  const note = await Note.findOneAndUpdate(
+    {
+      _id: id,
+      owner: req.user._id,
+      deletedAt: null,
+    },
+    {
+      deletedAt: new Date(),
+      isFavorite: false,
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (!note) {
+    throw new ApiError(404, "Note not found.");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      note,
+      "Note moved to trash successfully."
+    )
+  );
+});
+
+// ===============================
+// Restore Note
+// ===============================
+
+const restoreNote = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid note ID.");
+  }
+
+  const note = await Note.findOneAndUpdate(
+    {
+      _id: id,
+      owner: req.user._id,
+      deletedAt: { $ne: null },
+    },
+    {
+      deletedAt: null,
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (!note) {
+    throw new ApiError(404, "Note not found.");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      note,
+      "Note restored successfully."
+    )
+  );
+});
+
+// ===============================
+// Permanently Delete Note
+// ===============================
+
+const permanentlyDeleteNote = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid note ID.");
+  }
+
   const note = await Note.findOneAndDelete({
     _id: id,
     owner: req.user._id,
+    deletedAt: { $ne: null },
   });
 
   if (!note) {
@@ -200,7 +337,7 @@ const deleteNote = asyncHandler(async (req, res) => {
     new ApiResponse(
       200,
       null,
-      "Note deleted successfully."
+      "Note permanently deleted successfully."
     )
   );
 });
@@ -210,5 +347,8 @@ module.exports = {
   getNotes,
   getNoteById,
   updateNote,
-    deleteNote,
+  updateFavorite,
+  deleteNote,
+  restoreNote,
+  permanentlyDeleteNote,
 };

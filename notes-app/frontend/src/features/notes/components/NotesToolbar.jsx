@@ -2,6 +2,9 @@ import {
   Plus,
   Search,
   ArrowDownAZ,
+  Trash2,
+  Star,
+  FileText,
 } from "lucide-react";
 
 import {
@@ -20,13 +23,41 @@ import useNotes from "../hooks/useNotes";
 export default function NotesToolbar() {
   const {
     filters,
+    pagination,
     searchNotes,
     sortNotes,
     createDraft,
   } = useNotes();
 
+  const viewMeta = {
+    notes: {
+      icon: FileText,
+      label: "All notes",
+    },
+    favorites: {
+      icon: Star,
+      label: "Favorites",
+    },
+    trash: {
+      icon: Trash2,
+      label: "Trash",
+    },
+  };
+
+  const ActiveIcon = viewMeta[filters.view]?.icon || FileText;
+
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <ActiveIcon size={16} />
+          <span>{viewMeta[filters.view]?.label || "All notes"}</span>
+        </div>
+
+        <span className="text-xs text-muted-foreground">
+          {pagination.totalNotes} total
+        </span>
+      </div>
 
       {/* Search */}
 
@@ -92,6 +123,7 @@ export default function NotesToolbar() {
       <Button
         className="w-full"
         onClick={createDraft}
+        disabled={filters.view === "trash"}
       >
         <Plus className="mr-2 h-4 w-4" />
 

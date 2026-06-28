@@ -9,25 +9,25 @@ import NoteEditor from "../components/NoteEditor";
 import useNotes from "../hooks/useNotes";
 
 export default function Dashboard() {
-  const { loadNotes } = useNotes();
+  const { filters, loadNotes } = useNotes();
 
   useEffect(() => {
     loadNotes();
-  }, [loadNotes]);
+  }, [loadNotes, filters.search, filters.sort, filters.view]);
 
   return (
     <MainLayout>
-      <div className="grid h-full grid-cols-12 gap-6">
+      <div className="grid h-full grid-cols-1 gap-5 lg:grid-cols-12">
 
         {/* Left Panel */}
 
-        <aside className="col-span-4 flex h-full flex-col rounded-2xl border bg-white shadow-sm">
+        <aside className="flex min-h-0 flex-col rounded-lg border bg-card shadow-sm lg:col-span-4">
 
           <div className="border-b p-5">
             <NotesToolbar />
           </div>
 
-          <div className="flex-1 overflow-hidden p-5">
+          <div className="min-h-0 flex-1 overflow-hidden p-4">
             <NotesList />
           </div>
 
@@ -35,7 +35,7 @@ export default function Dashboard() {
 
         {/* Right Panel */}
 
-        <section className="col-span-8 h-full overflow-hidden rounded-2xl border bg-white shadow-sm">
+        <section className="min-h-0 overflow-hidden rounded-lg border bg-card shadow-sm lg:col-span-8">
 
           <NoteEditor />
 

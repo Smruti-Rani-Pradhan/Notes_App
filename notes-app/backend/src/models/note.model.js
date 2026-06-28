@@ -13,7 +13,27 @@ const noteSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
-      maxlength: 5000,
+      maxlength: 10000,
+    },
+
+    isFavorite: {
+      type: Boolean,
+      default: false,
+    },
+
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+
+    tags: {
+      type: [String],
+      default: [],
+    },
+
+    color: {
+      type: String,
+      default: "default",
     },
 
     owner: {
@@ -28,10 +48,8 @@ const noteSchema = new mongoose.Schema(
 );
 
 // Index for fast retrieval of a user's notes
-noteSchema.index({ owner: 1 });
-
-// Text search index with title given higher priority
-noteSchema.index(
+noteSchema.index({ owner: 1, deletedAt: 1, updatedAt: -1 });
+noteSchema.index({ owner: 1, isFavorite: 1, deletedAt: 1 });
   {
     title: "text",
     content: "text",

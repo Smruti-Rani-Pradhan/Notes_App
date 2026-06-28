@@ -4,6 +4,7 @@ import {
   Star,
   Trash2,
   LogOut,
+  NotebookText,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,10 +13,18 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import { logout } from "@/features/auth/authSlice";
+import useNotes from "@/features/notes/hooks/useNotes";
 
 export default function Sidebar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const {
+    filters,
+    notes,
+    pagination,
+    changeView,
+    createDraft,
+  } = useNotes();
 
   const handleLogout = async () => {
     const result = await dispatch(logout());
@@ -26,19 +35,27 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="flex w-72 flex-col border-r bg-white">
+    <aside className="hidden w-72 flex-col border-r bg-card lg:flex">
 
       {/* Logo */}
 
       <div className="border-b px-6 py-6">
 
-        <h1 className="text-3xl font-bold text-blue-600">
-          Notes
-        </h1>
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <NotebookText size={20} />
+          </div>
 
-        <p className="mt-1 text-sm text-slate-500">
-          Organize everything.
-        </p>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Notes
+            </h1>
+
+            <p className="text-sm text-muted-foreground">
+              Organize everything.
+            </p>
+          </div>
+        </div>
 
       </div>
 
@@ -46,7 +63,10 @@ export default function Sidebar() {
 
       <div className="p-5">
 
-        <Button className="w-full rounded-xl">
+        <Button
+          className="w-full rounded-lg"
+          onClick={createDraft}
+        >
 
           <Plus className="mr-2 h-4 w-4" />
 
@@ -61,17 +81,27 @@ export default function Sidebar() {
       <nav className="flex-1 space-y-2 px-4">
 
         <Button
-          variant="ghost"
-          className="w-full justify-start rounded-xl"
+          variant={filters.view === "notes" ? "secondary" : "ghost"}
+          className="w-full justify-between rounded-lg"
+          onClick={() => changeView("notes")}
         >
-          <FileText className="mr-2 h-5 w-5" />
+          <span className="flex items-center">
+            <FileText className="mr-2 h-5 w-5" />
 
-          My Notes
+            My Notes
+          </span>
+
+          <span className="text-xs text-muted-foreground">
+            {filters.view === "notes"
+              ? pagination.totalNotes
+              : notes.length}
+          </span>
         </Button>
 
         <Button
-          variant="ghost"
-          className="w-full justify-start rounded-xl"
+          variant={filters.view === "favorites" ? "secondary" : "ghost"}
+          className="w-full justify-start rounded-lg"
+          onClick={() => changeView("favorites")}
         >
           <Star className="mr-2 h-5 w-5" />
 
@@ -79,8 +109,9 @@ export default function Sidebar() {
         </Button>
 
         <Button
-          variant="ghost"
-          className="w-full justify-start rounded-xl"
+          variant={filters.view === "trash" ? "secondary" : "ghost"}
+          className="w-full justify-start rounded-lg"
+          onClick={() => changeView("trash")}
         >
           <Trash2 className="mr-2 h-5 w-5" />
 
@@ -95,7 +126,7 @@ export default function Sidebar() {
 
         <Button
           variant="destructive"
-          className="w-full rounded-xl"
+          className="w-full rounded-lg"
           onClick={handleLogout}
         >
           <LogOut className="mr-2 h-4 w-4" />
