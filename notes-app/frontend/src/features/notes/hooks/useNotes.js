@@ -15,6 +15,7 @@ import {
   setSearch,
   setSort,
   setView,
+  setTag,
 } from "../notesSlice";
 
 export default function useNotes() {
@@ -129,6 +130,11 @@ export default function useNotes() {
     [dispatch]
   );
 
+  const changeTag = useCallback(
+    (value) => dispatch(setTag(value)),
+    [dispatch]
+  );
+
   return {
     // State
     notes,
@@ -156,5 +162,6 @@ export default function useNotes() {
     searchNotes,
     sortNotes,
     changeView,
+    changeTag,
   };
 }

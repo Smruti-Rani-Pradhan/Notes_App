@@ -30,6 +30,7 @@ const initialState = {
     search: "",
     sort: "-createdAt",
     view: "notes",
+    tag: "",
   },
 
   loading: false,
@@ -51,6 +52,7 @@ export const fetchNotes = createAsyncThunk(
         search: filters.search || undefined,
         sort: filters.sort,
         view: filters.view,
+        tag: filters.tag || undefined,
         page: pagination.currentPage,
         limit: pagination.limit,
       });
@@ -209,10 +211,15 @@ const notesSlice = createSlice({
     },
 
     createNewDraft(state) {
+      let defaultColor = "default";
+      try {
+        defaultColor = localStorage.getItem("defaultNoteColor") || "default";
+      } catch (e) {}
       state.selectedNote = {
         _id: null,
         title: "",
         content: "",
+        color: defaultColor,
       };
     },
 
@@ -232,8 +239,14 @@ const notesSlice = createSlice({
 
     setView(state, action) {
       state.filters.view = action.payload;
+      state.filters.tag = "";
       state.pagination.currentPage = 1;
       state.selectedNote = null;
+    },
+
+    setTag(state, action) {
+      state.filters.tag = action.payload;
+      state.pagination.currentPage = 1;
     },
 
     clearError(state) {
@@ -456,6 +469,7 @@ export const {
   setSearch,
   setSort,
   setView,
+  setTag,
   clearError,
 } = notesSlice.actions;
 

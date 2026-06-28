@@ -12,8 +12,12 @@ export default function NoteEditor() {
   const {
     title,
     content,
+    tags,
+    color,
     setTitle,
     setContent,
+    setTags,
+    setColor,
     saveNote,
     loading,
     selectedNote,
@@ -25,6 +29,7 @@ export default function NoteEditor() {
     restoreNote,
     permanentlyDeleteNote,
     filters,
+    clearSelection,
   } = useNotes();
 
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -120,14 +125,19 @@ export default function NoteEditor() {
         key={selectedNote._id ?? "draft"}
         title={title}
         content={content}
+        tags={tags}
+        color={color}
         setTitle={setTitle}
         setContent={setContent}
+        setTags={setTags}
+        setColor={setColor}
         loading={loading}
         onSave={saveNote}
         onDelete={() => setDeleteOpen(true)}
         onFavorite={handleFavorite}
         onRestore={handleRestore}
         onPermanentDelete={handlePermanentDelete}
+        onBack={clearSelection}
         isExisting={Boolean(selectedNote._id)}
         isFavorite={Boolean(selectedNote.isFavorite)}
         isTrash={filters.view === "trash" || Boolean(selectedNote.deletedAt)}

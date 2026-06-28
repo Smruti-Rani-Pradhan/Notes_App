@@ -23,11 +23,13 @@ const createNote = asyncHandler(async (req, res) => {
     throw new ApiError(400, error);
   }
 
-  const { title, content } = req.body;
+  const { title, content, tags, color } = req.body;
 
   const note = await Note.create({
     title: title.trim(),
     content: content?.trim() || "",
+    tags: Array.isArray(tags) ? tags : [],
+    color: color || "default",
     owner: req.user._id,
   });
 
@@ -65,6 +67,10 @@ const getNotes = asyncHandler(async (req, res) => {
 
   if (req.query.view === "trash") {
     filter.deletedAt = { $ne: null };
+  }
+
+  if (req.query.tag) {
+    filter.tags = req.query.tag;
   }
 
   if (req.query.search) {
@@ -175,6 +181,14 @@ const updateNote = asyncHandler(async (req, res) => {
 
   if (req.body.content !== undefined) {
     note.content = req.body.content.trim();
+  }
+
+  if (req.body.tags !== undefined) {
+    note.tags = Array.isArray(req.body.tags) ? req.body.tags : [];
+  }
+
+  if (req.body.color !== undefined) {
+    note.color = req.body.color;
   }
 
   await note.save();

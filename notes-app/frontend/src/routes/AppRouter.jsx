@@ -11,6 +11,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import Login from "@/features/auth/pages/Login";
 import Register from "@/features/auth/pages/Register";
 import Dashboard from "@/features/notes/pages/Dashboard";
+import Settings from "@/features/settings/pages/Settings";
 import NotFound from "@/pages/NotFound";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -45,6 +46,10 @@ export default function AppRouter() {
                     <Route
                         path="/dashboard"
                         element={<Dashboard />}
+                    />
+                    <Route
+                        path="/settings"
+                        element={<Settings />}
                     />
                 </Route>
 

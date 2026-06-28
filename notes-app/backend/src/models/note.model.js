@@ -50,6 +50,9 @@ const noteSchema = new mongoose.Schema(
 // Index for fast retrieval of a user's notes
 noteSchema.index({ owner: 1, deletedAt: 1, updatedAt: -1 });
 noteSchema.index({ owner: 1, isFavorite: 1, deletedAt: 1 });
+
+// Text search index with title given higher priority
+noteSchema.index(
   {
     title: "text",
     content: "text",

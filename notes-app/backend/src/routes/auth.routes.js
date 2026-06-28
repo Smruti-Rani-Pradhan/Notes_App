@@ -8,6 +8,8 @@ const {
   logoutUser,
   refreshAccessToken,
   getCurrentUser,
+  updateProfile,
+  changePassword,
 } = require("../controllers/auth.controller");
 
 const verifyJWT = require("../middleware/auth.middleware");
@@ -24,5 +26,9 @@ router.post("/refresh", authLimiter, refreshAccessToken);
 router.post("/logout", verifyJWT, logoutUser);
 
 router.get("/me", verifyJWT, getCurrentUser);
+
+router.patch("/update-profile", verifyJWT, updateProfile);
+
+router.patch("/change-password", verifyJWT, changePassword);
 
 module.exports = router;

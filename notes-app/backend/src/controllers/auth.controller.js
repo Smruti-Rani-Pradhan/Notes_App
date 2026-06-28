@@ -161,10 +161,55 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       )
     );
 });
+const updateProfile = asyncHandler(async (req, res) => {
+  const { name } = req.body;
+
+  if (!name || name.trim() === "") {
+    throw new ApiError(400, "Name is required.");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: { name: name.trim() },
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  return res.status(200).json(
+    new ApiResponse(200, user, "Profile updated successfully.")
+  );
+});
+
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    throw new ApiError(400, "Old and new passwords are required.");
+  }
+
+  const user = await User.findById(req.user._id).select("+password");
+
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Incorrect old password.");
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  return res.status(200).json(
+    new ApiResponse(200, null, "Password changed successfully.")
+  );
+});
+
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
   refreshAccessToken,
   getCurrentUser,
+  updateProfile,
+  changePassword,
 };

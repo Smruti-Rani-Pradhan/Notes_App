@@ -13,20 +13,28 @@ export default function useNoteEditor() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [tags, setTags] = useState([]);
+  const [color, setColor] = useState("default");
 
   useEffect(() => {
     if (selectedNote) {
       setTitle(selectedNote.title ?? "");
       setContent(selectedNote.content ?? "");
+      setTags(selectedNote.tags ?? []);
+      setColor(selectedNote.color ?? "default");
     } else {
       setTitle("");
       setContent("");
+      setTags([]);
+      setColor("default");
     }
   }, [selectedNote]);
 
   const resetEditor = () => {
     setTitle("");
     setContent("");
+    setTags([]);
+    setColor("default");
   };
 
   const saveNote = async () => {
@@ -38,6 +46,8 @@ export default function useNoteEditor() {
     const noteData = {
       title: title.trim(),
       content: content.trim(),
+      tags,
+      color,
     };
 
     try {
@@ -72,8 +82,12 @@ export default function useNoteEditor() {
   return {
     title,
     content,
+    tags,
+    color,
     setTitle,
     setContent,
+    setTags,
+    setColor,
     saveNote,
     loading,
     selectedNote,
