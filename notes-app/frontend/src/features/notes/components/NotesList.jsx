@@ -1,34 +1,43 @@
 import NoteCard from "./NoteCard";
 import EmptyState from "./EmptyState";
 
-const demoNotes = [
+const notes = [
   {
     id: 1,
     title: "Shopping List",
-    content: "Milk, Bread, Eggs, Fruits",
-    updatedAt: "2 hours ago",
+    content: "Milk, Eggs, Bread, Butter",
+    updatedAt: "2 min ago",
   },
   {
     id: 2,
-    title: "React Notes",
-    content: "Finish Redux Toolkit integration.",
+    title: "Meeting Notes",
+    content: "Complete frontend authentication.",
+    updatedAt: "1 hour ago",
+  },
+  {
+    id: 3,
+    title: "Project Ideas",
+    content: "Realtime collaboration using Socket.io",
     updatedAt: "Yesterday",
   },
 ];
 
 export default function NotesList() {
-  if (demoNotes.length === 0) {
+  if (!notes.length) {
     return <EmptyState />;
   }
 
   return (
-    <section className="h-full overflow-y-auto space-y-4">
-      {demoNotes.map((note) => (
+    <div className="space-y-4 overflow-y-auto">
+
+      {notes.map((note, index) => (
         <NoteCard
           key={note.id}
           note={note}
+          active={index === 0}
         />
       ))}
-    </section>
+
+    </div>
   );
 }

@@ -1,20 +1,20 @@
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function NoteEditor() {
   return (
-    <section className="flex h-full flex-col rounded-xl bg-white p-6 shadow">
+    <div className="flex h-full flex-col rounded-2xl bg-white p-8">
 
       <Input
         placeholder="Note title..."
-        className="mb-4 text-2xl font-semibold border-none shadow-none px-0"
+        className="mb-6 border-none px-0 text-3xl font-bold shadow-none focus-visible:ring-0"
       />
 
       <Textarea
-        placeholder="Start writing..."
-        className="flex-1 resize-none border-none shadow-none"
+        placeholder="Start writing your note..."
+        className="flex-1 resize-none border-none px-0 text-base shadow-none focus-visible:ring-0"
       />
 
-    </section>
+    </div>
   );
 }
