@@ -1,11 +1,9 @@
 import {
   FileText,
-  Heart,
-  Home,
-  LogOut,
   Plus,
-  Settings,
+  Star,
   Trash2,
+  LogOut,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,43 +21,60 @@ export default function Sidebar() {
     const result = await dispatch(logout());
 
     if (logout.fulfilled.match(result)) {
-      navigate("/login");
+      navigate("/login", { replace: true });
     }
   };
 
   return (
-    <aside className="hidden md:flex w-72 bg-white border-r border-slate-200 flex-col">
+    <aside className="flex w-72 flex-col border-r bg-white">
 
-      <div className="p-5">
-        <Button className="w-full rounded-xl">
-          <Plus className="mr-2 h-4 w-4" />
-          New Note
-        </Button>
+      {/* Logo */}
+
+      <div className="border-b px-6 py-6">
+
+        <h1 className="text-3xl font-bold text-blue-600">
+          Notes
+        </h1>
+
+        <p className="mt-1 text-sm text-slate-500">
+          Organize everything.
+        </p>
+
       </div>
 
-      <nav className="flex-1 px-4 space-y-2">
+      {/* New Note */}
+
+      <div className="p-5">
+
+        <Button className="w-full rounded-xl">
+
+          <Plus className="mr-2 h-4 w-4" />
+
+          New Note
+
+        </Button>
+
+      </div>
+
+      {/* Navigation */}
+
+      <nav className="flex-1 space-y-2 px-4">
 
         <Button
           variant="ghost"
           className="w-full justify-start rounded-xl"
         >
-          <Home className="mr-3 h-4 w-4" />
-          Dashboard
+          <FileText className="mr-2 h-5 w-5" />
+
+          My Notes
         </Button>
 
         <Button
           variant="ghost"
           className="w-full justify-start rounded-xl"
         >
-          <FileText className="mr-3 h-4 w-4" />
-          All Notes
-        </Button>
+          <Star className="mr-2 h-5 w-5" />
 
-        <Button
-          variant="ghost"
-          className="w-full justify-start rounded-xl"
-        >
-          <Heart className="mr-3 h-4 w-4" />
           Favorites
         </Button>
 
@@ -67,21 +82,16 @@ export default function Sidebar() {
           variant="ghost"
           className="w-full justify-start rounded-xl"
         >
-          <Trash2 className="mr-3 h-4 w-4" />
-          Trash
-        </Button>
+          <Trash2 className="mr-2 h-5 w-5" />
 
-        <Button
-          variant="ghost"
-          className="w-full justify-start rounded-xl"
-        >
-          <Settings className="mr-3 h-4 w-4" />
-          Settings
+          Trash
         </Button>
 
       </nav>
 
-      <div className="border-t p-4">
+      {/* Logout */}
+
+      <div className="border-t p-5">
 
         <Button
           variant="destructive"
@@ -89,6 +99,7 @@ export default function Sidebar() {
           onClick={handleLogout}
         >
           <LogOut className="mr-2 h-4 w-4" />
+
           Logout
         </Button>
 

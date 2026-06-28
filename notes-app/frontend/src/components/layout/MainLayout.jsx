@@ -3,20 +3,16 @@ import Sidebar from "./Sidebar";
 
 export default function MainLayout({ children }) {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-100 overflow-hidden">
+      <Sidebar />
 
-      <Header />
+      <div className="flex flex-1 flex-col">
+        <Header />
 
-      <div className="flex">
-
-        <Sidebar />
-
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-hidden p-6">
           {children}
         </main>
-
       </div>
-
     </div>
   );
 }

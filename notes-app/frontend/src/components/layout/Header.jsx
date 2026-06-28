@@ -1,6 +1,5 @@
-import { Bell, Plus, Search } from "lucide-react";
+import { Search, Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Avatar,
   AvatarFallback,
@@ -11,27 +10,24 @@ export default function Header() {
   const { user } = useSelector((state) => state.auth);
 
   return (
-    <header className="sticky top-0 z-50 h-16 bg-white/90 backdrop-blur border-b border-slate-200 px-6 flex items-center justify-between">
+    <header className="flex h-20 items-center justify-between border-b bg-white px-8">
 
-      {/* Logo */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-lg shadow">
-          N
-        </div>
+      {/* Left */}
 
-        <div>
-          <h1 className="font-bold text-lg text-slate-800">
-            Notes App
-          </h1>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">
+          Dashboard
+        </h1>
 
-          <p className="text-xs text-slate-500">
-            Organize your ideas
-          </p>
-        </div>
+        <p className="text-sm text-slate-500">
+          Welcome back, {user?.name || "User"}
+        </p>
       </div>
 
-      {/* Search */}
-      <div className="hidden md:flex relative w-full max-w-lg mx-8">
+      {/* Center */}
+
+      <div className="relative hidden w-full max-w-md lg:block">
+
         <Search
           className="absolute left-3 top-3 text-slate-400"
           size={18}
@@ -39,44 +35,24 @@ export default function Header() {
 
         <Input
           placeholder="Search notes..."
-          className="pl-10 rounded-xl"
+          className="pl-10"
         />
+
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-3">
 
-        <Button size="sm" className="hidden md:flex">
-          <Plus className="mr-2 h-4 w-4" />
-          New Note
-        </Button>
+      <div className="flex items-center gap-5">
 
-        <Button
-          size="icon"
-          variant="ghost"
-        >
+        <button className="rounded-full p-2 transition hover:bg-slate-100">
           <Bell size={20} />
-        </Button>
+        </button>
 
-        <div className="flex items-center gap-3">
-
-          <Avatar>
-            <AvatarFallback>
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="hidden lg:block">
-            <p className="text-sm font-semibold">
-              {user?.name || "User"}
-            </p>
-
-            <p className="text-xs text-slate-500">
-              {user?.email || ""}
-            </p>
-          </div>
-
-        </div>
+        <Avatar className="h-10 w-10">
+          <AvatarFallback>
+            {user?.name?.charAt(0).toUpperCase() || "U"}
+          </AvatarFallback>
+        </Avatar>
 
       </div>
 
