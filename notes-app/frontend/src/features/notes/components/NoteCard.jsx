@@ -31,7 +31,18 @@ export default function NoteCard({ note }) {
       </div>
 
       <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground/90 font-medium">
-        {note.content || "No additional content."}
+        {note.content 
+          ? note.content
+              .replace(/\*\*([^*]+)\*\*/g, "$1")
+              .replace(/__([^_]+)__/g, "$1")
+              .replace(/\*([^*]+)\*/g, "$1")
+              .replace(/_([^_]+)_/g, "$1")
+              .replace(/`([^`]+)`/g, "$1")
+              .replace(/#+\s+/g, "")
+              .replace(/- \[[x ]\]\s+/g, "")
+              .replace(/-\s+/g, "")
+              .replace(/\*\s+/g, "")
+          : "No additional content."}
       </p>
 
       {/* Tags List */}

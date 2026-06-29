@@ -65,7 +65,7 @@ export default function NotesToolbar() {
 
         <Search
           size={18}
-          className="absolute left-3 top-3 text-slate-400"
+          className="absolute left-3 top-3 text-muted-foreground/60"
         />
 
         <Input

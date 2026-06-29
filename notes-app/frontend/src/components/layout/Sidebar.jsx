@@ -17,7 +17,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "@/features/auth/authSlice";
 import useNotes from "@/features/notes/hooks/useNotes";
 
-export default function Sidebar() {
+export default function Sidebar({ className = "" }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,7 +44,7 @@ export default function Sidebar() {
   ).filter(Boolean);
 
   return (
-    <aside className="hidden w-72 flex-col border-r bg-card lg:flex">
+    <aside className={`flex h-full flex-col bg-card ${className}`}>
       
       {/* Logo */}
       <div className="border-b px-6 py-6">

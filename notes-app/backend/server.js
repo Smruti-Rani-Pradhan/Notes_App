@@ -11,20 +11,15 @@ const noteRoutes = require("./src/routes/note.routes");
 
 dotenv.config();
 
-// Connect Database
 connectDB();
 
 const app = express();
 
-// Trust proxy (for deployment)
 app.set("trust proxy", 1);
 
-// Hide Express technology
 app.disable("x-powered-by");
 
-// ==============================
 // Security Middlewares
-// ==============================
 
 app.use(helmet());
 
@@ -68,9 +63,7 @@ app.use(
   })
 );
 
-// ==============================
 // Parsing Middlewares
-// ==============================
 
 app.use(express.json());
 
@@ -78,26 +71,18 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
-// ==============================
-// Logger
-// ==============================
 
 app.use(morgan("dev"));
 
-// ==============================
-// Routes
-// ==============================
 
 app.get("/", (req, res) => {
   res.status(200).send("Notes API Running...");
 });
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", noteRoutes);
 
-// ==============================
-// 404 Handler
-// ==============================
 
 app.use((req, res) => {
   res.status(404).json({
@@ -106,9 +91,6 @@ app.use((req, res) => {
   });
 });
 
-// ==============================
-// Global Error Handler
-// ==============================
 
 app.use((err, req, res, next) => {
   console.error(err);
@@ -122,9 +104,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ==============================
-// Server
-// ==============================
 
 const PORT = process.env.PORT || 5000;
 

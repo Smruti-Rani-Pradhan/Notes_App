@@ -88,7 +88,7 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-72 border-r bg-card" showCloseButton={false}>
-              <Sidebar />
+              <Sidebar className="flex w-full" />
             </SheetContent>
           </Sheet>
         </div>

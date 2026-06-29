@@ -6,15 +6,54 @@ import {
   logoutUser,
   updateProfileApi,
   changePasswordApi,
+  refreshAccessToken,
+  getCurrentUser,
 } from "./api/authApi";
 
+let savedToken = null;
+let savedUser = null;
+try {
+  savedToken = sessionStorage.getItem("accessToken");
+  savedUser = JSON.parse(sessionStorage.getItem("user"));
+} catch (e) {}
+
 const initialState = {
-  user: null,
-  accessToken: null,
-  isAuthenticated: false,
+  user: savedUser || null,
+  accessToken: savedToken || null,
+  isAuthenticated: !!savedToken,
   loading: false,
+  initialized: !!savedToken,
   error: null,
 };
+
+// ==========================
+// Check Session (Silent Refresh)
+// ==========================
+export const checkSession = createAsyncThunk(
+  "auth/checkSession",
+  async (_, thunkAPI) => {
+    try {
+      const refreshResponse = await refreshAccessToken();
+      const refreshData = refreshResponse.data || refreshResponse;
+      const token = refreshData.accessToken;
+      
+      if (!token) throw new Error("No token returned");
+      
+      sessionStorage.setItem("accessToken", token);
+      
+      const userResponse = await getCurrentUser();
+      const userData = userResponse.data || userResponse;
+      
+      return { token, user: userData };
+    } catch (error) {
+      try {
+        sessionStorage.removeItem("accessToken");
+        sessionStorage.removeItem("user");
+      } catch (e) {}
+      return thunkAPI.rejectWithValue("Session expired");
+    }
+  }
+);
 
 // ==========================
 // Login
@@ -138,9 +177,13 @@ const authSlice = createSlice({
         state.user = payload.user || null;
         state.accessToken = payload.accessToken || null;
         state.isAuthenticated = !!payload.accessToken;
+        state.initialized = true;
         try {
           if (payload.accessToken) {
-            localStorage.setItem("accessToken", payload.accessToken);
+            sessionStorage.setItem("accessToken", payload.accessToken);
+          }
+          if (payload.user) {
+            sessionStorage.setItem("user", JSON.stringify(payload.user));
           }
         } catch (e) {}
       })
@@ -182,7 +225,8 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.error = null;
         try {
-          localStorage.removeItem("accessToken");
+          sessionStorage.removeItem("accessToken");
+          sessionStorage.removeItem("user");
         } catch (e) {}
       })
 
@@ -203,6 +247,9 @@ const authSlice = createSlice({
         const payload = action.payload?.data || action.payload || {};
         state.user = payload;
         state.error = null;
+        try {
+          sessionStorage.setItem("user", JSON.stringify(payload));
+        } catch (e) {}
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.loading = false;
@@ -223,6 +270,30 @@ const authSlice = createSlice({
       .addCase(updatePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // ==========================
+      // Check Session
+      // ==========================
+      .addCase(checkSession.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(checkSession.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.accessToken = action.payload.token;
+        state.isAuthenticated = true;
+        state.initialized = true;
+        try {
+          sessionStorage.setItem("user", JSON.stringify(action.payload.user));
+        } catch (e) {}
+      })
+      .addCase(checkSession.rejected, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.accessToken = null;
+        state.isAuthenticated = false;
+        state.initialized = true;
       });
   },
 });
